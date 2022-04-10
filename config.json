@@ -1,0 +1,22 @@
+{
+      "bwcmnq": {
+            "basedir": "/home/zjan/test",
+            "desdir": "/home/zjan/test/zjan-bwcmnq/content/posts",
+            "workdir": "/home/zjan/test/zjan-bwcmnq",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": false
+            }
+      },
+      "zjan-bwcmnq": {
+            "basedir": "/home/zjan/test",
+            "desdir": "/home/zjan/test/zjan-bwcmnq/content/posts",
+            "workdir": "/home/zjan/test/zjan-bwcmnq",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": false
+            }
+      }
+}

@@ -1,8 +1,8 @@
 {
       "bwcmnq": {
-            "basedir": "/home/zjan/test",
-            "desdir": "/home/zjan/test/zjan-bwcmnq/content/posts",
-            "workdir": "/home/zjan/test/zjan-bwcmnq",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-bwcmnq/content/posts",
+            "workdir": "/home/janz/test/zjan-bwcmnq",
             "cmd": "hugo",
             "conf": {
                   "html": true,
@@ -10,9 +10,9 @@
             }
       },
       "zjan-bwcmnq": {
-            "basedir": "/home/zjan/test",
-            "desdir": "/home/zjan/test/zjan-bwcmnq/content/posts",
-            "workdir": "/home/zjan/test/zjan-bwcmnq",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-bwcmnq/content/posts",
+            "workdir": "/home/janz/test/zjan-bwcmnq",
             "cmd": "hugo",
             "conf": {
                   "html": true,

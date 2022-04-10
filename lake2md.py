@@ -26,7 +26,8 @@ def get_pic(line):
         p_url = re.compile(r'https://cdn.nlark.com/yuque/\d/\d{4}/(png|jpeg)/\d{6}/\w+-\w+-\w+-\w+-\w+-\w+.(png|jpeg)', re.I)
         media_url = re.search(p_url, line)[0]
         logger.debug("图片的地址：{media_url}")
-    return f'<img src="{media_url}" alt="{media_cap}" referrerPolicy="no-referrer" />  '
+    # return f'<img src="{media_url}" alt="{media_cap}" referrerPolicy="no-referrer" />  '
+    return media_cap, media_url
 
 
 def get_attachment(line):
@@ -62,8 +63,9 @@ def lake_to_md(doc, title):
     doc_list = []
     for line in md_list:
         if line.startswith('!['):
-            img_url = get_pic(line)
-            doc_list.append(img_url)
+            img_cap, img_url = get_pic(line)
+            img = f'<img src="{img_url}" alt="{img_cap}" referrerPolicy="no-referrer" />  '
+            doc_list.append(img)
         elif 'www.yuque.com/attachments' in line:
             attachment_url = get_attachment(line)
             doc_list.append(attachment_url)

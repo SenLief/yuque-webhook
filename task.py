@@ -5,26 +5,25 @@ import os
 import re
 import subprocess
 import json
-import zipfile
+import shutil
 import requests
 
 from pathlib import Path
 from loguru import logger
 
-from lake2md import lake_to_md
+from lake2md import lake_to_md, get_pic
 from dotenv import dotenv_values
 
 user_config = dotenv_values(".env")
 
 class Config:
     def __init__(self, prefix):
-        self.prefix = prefix
         try:
             pwd = Path(__file__).absolute()
             file_path = Path(pwd).parent / 'config.json'
             with open(file_path, 'r') as f:
                 config = json.load(f)
-
+            self.config = config
             if prefix in config.keys():
                 self.basedir = config[prefix].get('basedir', user_config.get('BASEDIR', Path.home()))
                 self.desdir = config[prefix].get('desdir', user_config.get('DESDIR', Path.home()))
@@ -54,6 +53,12 @@ def init_cmd(gen, workdir, desdir):
         subprocess.call("hugo new site .",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8")
         Path(desdir).mkdir(parents=True, exist_ok=True)
         logger.info("初始化一个HUGO博客")
+        theme_url = 'https://github.com/AmazingRise/hugo-theme-diary.git'
+        command = ["git", "clone", theme_url, Path(workdir, 'themes', 'diary')]
+        subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        Path(workdir, 'config.toml').write_text(Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text())
+        os.chdir(Path(workdir))
+        subprocess.call(["hugo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
     else:
         logger.info("没有初始化命令")
         pass
@@ -85,6 +90,7 @@ def init_conf(prefix):
         json.dump(config_dict, file_path.open('w+'), indent = 6)
         logger.info("为{}初始化一个配置文件", prefix)
         init_cmd(gen, workdir, desdir)
+        logger.info("网站部署完成")
     else:
         logger.info("{}存在一个配置文件，没有更新", prefix)
         pass
@@ -101,8 +107,13 @@ def init_web(doc, prefix):
     for line in var_list:
         v = line.split('=')
         var_dict.update({v[0]: v[1]})
-    commamd = ["git", "clone", var_dict['theme_url'], Path(config.workdir, 'themes', var_dict['theme'])]
-    subprocess.call(commamd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+    theme_dir = Path(config.workdir, 'themes', var_dict['theme'])
+    if Path(theme_dir).exists():
+        logger.info("主题文件存在，不处理")
+    else:
+        logger.info("下载主题{}", var_dict['theme'])
+        command = ["git", "clone", var_dict['theme_url'], Path(config.workdir, 'themes', var_dict['theme'])]
+        subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 
     # 处理配置文件
     conf_list = list(filter(None, doc_list[1].split('\n')))
@@ -112,22 +123,36 @@ def init_web(doc, prefix):
         Path(config.workdir, 'config.toml').write_text('\n'.join(conf_list[1:-1]))
     
     # 处理静态文件
+    logger.info("静态文件夹为{}", var_dict['staticdir'])
     static_path = Path(config.workdir, var_dict['staticdir'])
-    # attachment_format = 'zip|mp4|rar|html|7z|ai|mov|m4a|wmv|avi|flv|chm|wps|rtf|aac|htm|xhtml|rmvb|asf|m3u8|mpg|flac|dat|mkv|swf|m4v|webm|mpeg|mts|3gp|f4v|dv|m2t|mj2|mjpeg|mpe|ogg'
-    # p_url = re.compile(fr'https://www.yuque.com/attachments/yuque/\d/\d{{4}}/({attachment_format})/\d{{6}}/\w+-\w+-\w+-\w+-\w+-\w+.({attachment_format})', re.I)
-    # attachment_url = re.search(p_url, list(filter(None, doc_list[2].split('\n')))[0])[0]
-    # logger.debug(attachment_url)
-    # resp = requests.get("https://www.yuque.com/attachments/yuque/0/2022/zip/243852/1649585814297-a951d6bc-7e3e-4977-b8de-4ea15bdfa424.zip?_lake_card=%7B%22src%22%3A%22https%3A%2F%2Fwww.yuque.com%2Fattachments%2Fyuque%2F0%2F2022%2Fzip%2F243852%2F1649585814297-a951d6bc-7e3e-4977-b8de-4ea15bdfa424.zip%22%2C%22name%22%3A%22static.zip%22%2C%22size%22%3A299481%2C%22type%22%3A%22application%2Fx-zip-compressed%22%2C%22ext%22%3A%22zip%22%2C%22status%22%3A%22done%22%2C%22taskId%22%3A%22u704c20a9-49d1-4dbc-98cc-192bef5e96e%22%2C%22taskType%22%3A%22upload%22%2C%22id%22%3A%22u2fb9b168%22%2C%22card%22%3A%22file%22%7D", stream=True)
-    # file_name = Path(config.workdir, static_path, 'static.zip')
-    # with open(file_name, 'wb') as f:
-    #     for chunk in resp.iter_content(chunk_size=1024): #边下载边存硬盘
-    #         if chunk:
-    #             f.write(chunk)
-    # # Path(config.workdir, static_path, 'static.zip').write_bytes(resp.content)
-    # zip_file = zipfile.ZipFile(Path(config.workdir, static_path, 'static.zip'))
-    # zip_extract = zip_file.extractall()
-    # zip_extract.close()
+    static_list = list(filter(None, doc_list[2].split('\n')))
+    logger.debug(static_list)
+    if len(static_list) == 0:
+        pass
+    else:
+        for line in static_list:
+            cap, url = get_pic(line)
+            resp = requests.get(url)
+            Path(static_path, cap).write_bytes(resp.content)
     config.deploy()
+    logger.info("部署网站配置完成！")
+
+def delete_namespace(namespace):
+    pwd = Path(__file__).absolute()
+    file_path = Path(pwd).parent / 'config.json'
+    with open(file_path, 'r') as f:
+        config = json.load(f)
+    if namespace in config:
+        try:
+            shutil.rmtree(Path(config[namespace]['workdir']))
+            del config[namespace]
+            json.dump(config, Path(file_path).open('w+'), indent = 6)
+            logger.info("{}已经删除了", namespace)
+        except IOError as e:
+            logger.exception(e)
+    else:
+        pass
+        logger.info("{}不存在", namespace)
 
 def publish_doc(slug, doc, title, prefix):
     config = Config(prefix)
@@ -179,6 +204,6 @@ def delete_doc(slug, title, prefix):
 
    
 if __name__ == '__main__':
-    # init_doc('zjan-bwcmnq') 
+    init_conf(os.environ['NAMESPACE']) 
     # init_conf('cccc')  
-    init_web("```bash\ngen=hugo\ntheme=LoveIt\ntheme_url=https://github.com/dillonzq/LoveIt.git\nstaticdir=themes\n```\n\n---\n\n```toml\nbaseURL = \"http://example.org/\"\n# [en, zh-cn, fr, ...] 设置默认的语言\ndefaultContentLanguage = \"zh-cn\"\n# 网站语言, 仅在这里 CN 大写\nlanguageCode = \"zh-CN\"\n# 是否包括中日韩文字\nhasCJKLanguage = true\n# 网站标题\ntitle = \"我的全新 Hugo 网站\"\n\n# 更改使用 Hugo 构建网站时使用的默认主题\ntheme = \"LoveIt\"\n\n[params]\n# LoveIt 主题版本\nversion = \"0.2.X\"\n\n[menu]\n[[menu.main]]\nidentifier = \"posts\"\n# 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标\npre = \"\"\n# 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标\npost = \"\"\nname = \"文章\"\nurl = \"/posts/\"\n# 当你将鼠标悬停在此菜单链接上时, 将显示的标题\ntitle = \"\"\nweight = 1\n[[menu.main]]\nidentifier = \"tags\"\npre = \"\"\npost = \"\"\nname = \"标签\"\nurl = \"/tags/\"\ntitle = \"\"\nweight = 2\n[[menu.main]]\nidentifier = \"categories\"\npre = \"\"\npost = \"\"\nname = \"分类\"\nurl = \"/categories/\"\ntitle = \"\"\nweight = 3\n\n# Hugo 解析文档的配置\n[markup]\n# 语法高亮设置 (https://gohugo.io/content-management/syntax-highlighting)\n[markup.highlight]\n# false 是必要的设置 (https://github.com/dillonzq/LoveIt/issues/158)\nnoClasses = false\n\n```\n\n---\n\n[static.zip](https://www.yuque.com/attachments/yuque/0/2022/zip/243852/1649585814297-a951d6bc-7e3e-4977-b8de-4ea15bdfa424.zip?_lake_card=%7B%22src%22%3A%22https%3A%2F%2Fwww.yuque.com%2Fattachments%2Fyuque%2F0%2F2022%2Fzip%2F243852%2F1649585814297-a951d6bc-7e3e-4977-b8de-4ea15bdfa424.zip%22%2C%22name%22%3A%22static.zip%22%2C%22size%22%3A299481%2C%22type%22%3A%22application%2Fx-zip-compressed%22%2C%22ext%22%3A%22zip%22%2C%22status%22%3A%22done%22%2C%22taskId%22%3A%22u704c20a9-49d1-4dbc-98cc-192bef5e96e%22%2C%22taskType%22%3A%22upload%22%2C%22id%22%3A%22u2fb9b168%22%2C%22card%22%3A%22file%22%7D)\n","zjan-bwcmnq") 
+    # init_web("```bash\ngen=hugo\ntheme=LoveIt\ntheme_url=https://github.com/dillonzq/LoveIt.git\nstaticdir=themes\n```\n\n---\n\n```toml\nbaseURL = \"http://example.org/\"\n# [en, zh-cn, fr, ...] 设置默认的语言\ndefaultContentLanguage = \"zh-cn\"\n# 网站语言, 仅在这里 CN 大写\nlanguageCode = \"zh-CN\"\n# 是否包括中日韩文字\nhasCJKLanguage = true\n# 网站标题\ntitle = \"我的全新 Hugo 网站\"\n\n# 更改使用 Hugo 构建网站时使用的默认主题\ntheme = \"LoveIt\"\n\n[params]\n# LoveIt 主题版本\nversion = \"0.2.X\"\n\n[menu]\n[[menu.main]]\nidentifier = \"posts\"\n# 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标\npre = \"\"\n# 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标\npost = \"\"\nname = \"文章\"\nurl = \"/posts/\"\n# 当你将鼠标悬停在此菜单链接上时, 将显示的标题\ntitle = \"\"\nweight = 1\n[[menu.main]]\nidentifier = \"tags\"\npre = \"\"\npost = \"\"\nname = \"标签\"\nurl = \"/tags/\"\ntitle = \"\"\nweight = 2\n[[menu.main]]\nidentifier = \"categories\"\npre = \"\"\npost = \"\"\nname = \"分类\"\nurl = \"/categories/\"\ntitle = \"\"\nweight = 3\n\n# Hugo 解析文档的配置\n[markup]\n# 语法高亮设置 (https://gohugo.io/content-management/syntax-highlighting)\n[markup.highlight]\n# false 是必要的设置 (https://github.com/dillonzq/LoveIt/issues/158)\nnoClasses = false\n\n```\n\n---\n\n![avatar.png](https://cdn.nlark.com/yuque/0/2022/png/243852/1649596432324-692f5c93-1f8c-4a86-94f6-bb0f48c2da6a.png#clientId=udebfdf32-6ca6-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=u9f1e44df&margin=%5Bobject%20Object%5D&name=avatar.png&originHeight=640&originWidth=640&originalType=binary&ratio=1&rotation=0&showTitle=false&size=34002&status=done&style=none&taskId=u2cc0debc-cb3f-46b2-a20e-3faab5dc9a1&title=)\n\n![uTools_1648054722512.png](https://cdn.nlark.com/yuque/0/2022/png/243852/1649596451630-f3824cbb-946a-412a-8984-646531584981.png#clientId=udebfdf32-6ca6-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=u2ded442e&margin=%5Bobject%20Object%5D&name=uTools_1648054722512.png&originHeight=857&originWidth=1693&originalType=binary&ratio=1&rotation=0&showTitle=false&size=73815&status=done&style=none&taskId=u2a545784-171f-4889-ba02-175b6e348aa&title=)\n","zjan-bwcmnq") 

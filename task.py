@@ -115,6 +115,8 @@ def init_web(doc, prefix):
     if Path(theme_dir).exists():
         logger.info("主题文件存在，不处理")
     else:
+        shutil.rmtree(Path(config.workdir, 'themes'))
+        Path(config.workdir, 'themes').mkdir(parents=True, exist_ok=True)
         logger.info("下载主题{}", var_dict['theme'])
         command = ["git", "clone", var_dict['theme_url'], Path(config.workdir, 'themes', var_dict['theme'])]
         subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
@@ -163,8 +165,15 @@ def delete_namespace(namespace):
 def publish_doc(slug, doc, title, prefix):
     config = Config(prefix)
     try:
-        md_doc = lake_to_md(doc, title)
-        Path(config.desdir, title + '.md').write_text(md_doc)
+        md_doc, file_path = lake_to_md(doc, title)
+        if file_path == '':
+            path = str(Path(config.desdir))
+            Path(config.desdir, title + '.md').write_text(md_doc)
+        else:
+            path = str(Path(config.workdir, 'content', file_path))
+            Path(config.workdir, 'content', file_path).mkdir(parents=True, exist_ok=True)
+            Path(config.workdir, 'content', file_path, title + '.md').write_text(md_doc)
+        logger.debug(path)
         logger.info("写入了一篇新的文章：{}", title)
     except IOError as e:
         logger.exception(e)
@@ -174,15 +183,16 @@ def publish_doc(slug, doc, title, prefix):
         conf_dict = json.loads(conf)
         logger.debug("配置文件为:{}", conf_dict)
         if slug not in conf_dict:
-            conf_dict.update({slug: title })
-            json.dump(conf_dict, Path(config.workdir, prefix + '.json').open('w+'), indent = 6)
+            conf_dict.update({slug: {"title": title, "path": path }})
+            logger.debug("config为{}", conf_dict)
+            json.dump(conf_dict, Path(config.workdir, prefix + '.json').open('w+', encoding='utf-8'), indent = 6)
             logger.info("知识库{}发布了一遍名为<<{}>>的文章并已部署！", prefix, title)
         else:
             pass
             logger.info("知识库{}更新了一遍名为<<{}>>的文章并已部署！", prefix, title)
     else:
-        conf_dict = {slug: title}
-        json.dump(conf_dict, Path(config.workdir, prefix + '.json').open('w+'), indent = 6)
+        conf_dict = {slug: {"title": title, "path": path }}
+        json.dump(conf_dict, Path(config.workdir, prefix + '.json').open('w+', encoding='utf-8'), indent = 6)
         logger.info("配置文件为空,设置为新的文件") 
     config.deploy()
 
@@ -199,7 +209,7 @@ def delete_doc(slug, title, prefix):
         logger.info("配置文件为空,设置为新的文件")
 
     if slug in conf_dict:
-        file_path = Path(config.desdir, conf_dict[slug] + '.md')
+        file_path = Path(conf_dict[slug]['path'], conf_dict[slug]['title'] + '.md')
         Path(file_path).unlink()
         del conf_dict[slug]
         json.dump(conf_dict, Path(config.workdir, prefix + '.json').open('w+'), indent = 6)

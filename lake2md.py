@@ -61,8 +61,11 @@ def lake_to_md(doc, title):
     logger.debug("文档的内容：{md_list}")    
 
     doc_list = []
+    file_path = ''
     for line in md_list:
-        if line.startswith('!['):
+        if line.startswith('path'):
+            file_path = line.split(':')[1].strip()
+        elif line.startswith('!['):
             img_cap, img_url = get_pic(line)
             img = f'<img src="{img_url}" alt="{img_cap}" referrerPolicy="no-referrer" />  '
             doc_list.append(img)
@@ -88,7 +91,7 @@ def lake_to_md(doc, title):
         doc_list.insert(3, '---')      
     
     logger.debug("Markdown的文档内容为：{}", '\n'.join(doc_list))
-    return '\n'.join(doc_list)
+    return '\n'.join(doc_list), file_path
 
 
 if __name__ == '__main__':

@@ -43,7 +43,7 @@ class Config:
             logger.debug("命令为空")
 
 
-def init_theme(gen, workdir, desdir):
+def init_theme(gen, prefix, workdir, desdir):
     if gen == 'hugo':
         if Path(workdir).exists():
             os.chdir(Path(workdir))
@@ -56,7 +56,9 @@ def init_theme(gen, workdir, desdir):
         theme_url = 'https://github.com/AmazingRise/hugo-theme-diary.git'
         command = ["git", "clone", theme_url, Path(workdir, 'themes', 'diary')]
         subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-        Path(workdir, 'config.toml').write_text(Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text())
+        config_list = Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text().split('\n')
+        config_list[0] = f'baseURL = "https://{prefix}.529213.xyz"'
+        Path(workdir, 'config.toml').write_text('\n'.join(config_list))
         os.chdir(Path(workdir))
         subprocess.call(["hugo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
     else:
@@ -95,7 +97,7 @@ def create_namespace(prefix, code):
     logger.info("为{}初始化一个配置文件", prefix)
 
     # 下载主题和部署
-    init_theme(gen, workdir, desdir)
+    init_theme(gen, prefix, workdir, desdir)
     logger.info("网站部署完成")
 
 def init_web(doc, prefix):

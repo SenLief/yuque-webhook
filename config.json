@@ -8,15 +8,5 @@
                   "html": true,
                   "shortcode": false
             }
-      },
-      "zjan-bwcmnq": {
-            "basedir": "/home/janz/test",
-            "desdir": "/home/janz/test/zjan-bwcmnq/content/posts",
-            "workdir": "/home/janz/test/zjan-bwcmnq",
-            "cmd": "hugo",
-            "conf": {
-                  "html": true,
-                  "shortcode": false
-            }
       }
 }

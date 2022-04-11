@@ -43,7 +43,7 @@ class Config:
             logger.debug("命令为空")
 
 
-def init_cmd(gen, workdir, desdir):
+def init_theme(gen, workdir, desdir):
     if gen == 'hugo':
         if Path(workdir).exists():
             os.chdir(Path(workdir))
@@ -63,38 +63,40 @@ def init_cmd(gen, workdir, desdir):
         logger.info("没有初始化命令")
         pass
     
-    
-def init_conf(prefix):
+
+def create_namespace(prefix, code):
+    # 创建配置文件
     gen = user_config.get('GEN', '')
     basedir = user_config.get('BASEDIR', Path.home())
     workdir = user_config.get('WORKDIR', Path(basedir, prefix))
     desdir = user_config.get('DESDIR', Path(basedir, prefix, 'content', 'posts'))
+    
+    pwd = Path(__file__).absolute()
+    file_path = Path(pwd).parent / 'config.json'
+    config = Path(file_path).read_text(encoding='utf-8')
+    config_dict = json.loads(config)
+
     conf = {
         prefix: {
+            "code": code,
             "basedir": str(basedir),
             "desdir": str(desdir),
             "workdir": str(workdir),
             "cmd": gen,
             "conf": {
                 "html": True,
-                "shortcode": False
+                "shortcode": True
             } 
         }
     }
-    pwd = Path(__file__).absolute()
-    file_path = Path(pwd).parent / 'config.json'
-    config = Path(file_path).read_text(encoding='utf-8')
-    config_dict = json.loads(config)
-    if prefix not in config_dict:
-        config_dict.update(conf)
-        json.dump(config_dict, file_path.open('w+'), indent = 6)
-        logger.info("为{}初始化一个配置文件", prefix)
-        init_cmd(gen, workdir, desdir)
-        logger.info("网站部署完成")
-    else:
-        logger.info("{}存在一个配置文件，没有更新", prefix)
-        pass
 
+    config_dict.update(conf)
+    json.dump(config_dict, file_path.open('w+'), indent = 6)
+    logger.info("为{}初始化一个配置文件", prefix)
+
+    # 下载主题和部署
+    init_theme(gen, workdir, desdir)
+    logger.info("网站部署完成")
 
 def init_web(doc, prefix):
     doc_list = doc.split('---')
@@ -137,6 +139,7 @@ def init_web(doc, prefix):
     config.deploy()
     logger.info("部署网站配置完成！")
 
+
 def delete_namespace(namespace):
     pwd = Path(__file__).absolute()
     file_path = Path(pwd).parent / 'config.json'
@@ -153,6 +156,7 @@ def delete_namespace(namespace):
     else:
         pass
         logger.info("{}不存在", namespace)
+
 
 def publish_doc(slug, doc, title, prefix):
     config = Config(prefix)
@@ -204,6 +208,6 @@ def delete_doc(slug, title, prefix):
 
    
 if __name__ == '__main__':
-    init_conf(os.environ['NAMESPACE']) 
+    create_namespace(os.environ['NAMESPACE'], os.environ['CODE']) 
     # init_conf('cccc')  
     # init_web("```bash\ngen=hugo\ntheme=LoveIt\ntheme_url=https://github.com/dillonzq/LoveIt.git\nstaticdir=themes\n```\n\n---\n\n```toml\nbaseURL = \"http://example.org/\"\n# [en, zh-cn, fr, ...] 设置默认的语言\ndefaultContentLanguage = \"zh-cn\"\n# 网站语言, 仅在这里 CN 大写\nlanguageCode = \"zh-CN\"\n# 是否包括中日韩文字\nhasCJKLanguage = true\n# 网站标题\ntitle = \"我的全新 Hugo 网站\"\n\n# 更改使用 Hugo 构建网站时使用的默认主题\ntheme = \"LoveIt\"\n\n[params]\n# LoveIt 主题版本\nversion = \"0.2.X\"\n\n[menu]\n[[menu.main]]\nidentifier = \"posts\"\n# 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标\npre = \"\"\n# 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标\npost = \"\"\nname = \"文章\"\nurl = \"/posts/\"\n# 当你将鼠标悬停在此菜单链接上时, 将显示的标题\ntitle = \"\"\nweight = 1\n[[menu.main]]\nidentifier = \"tags\"\npre = \"\"\npost = \"\"\nname = \"标签\"\nurl = \"/tags/\"\ntitle = \"\"\nweight = 2\n[[menu.main]]\nidentifier = \"categories\"\npre = \"\"\npost = \"\"\nname = \"分类\"\nurl = \"/categories/\"\ntitle = \"\"\nweight = 3\n\n# Hugo 解析文档的配置\n[markup]\n# 语法高亮设置 (https://gohugo.io/content-management/syntax-highlighting)\n[markup.highlight]\n# false 是必要的设置 (https://github.com/dillonzq/LoveIt/issues/158)\nnoClasses = false\n\n```\n\n---\n\n![avatar.png](https://cdn.nlark.com/yuque/0/2022/png/243852/1649596432324-692f5c93-1f8c-4a86-94f6-bb0f48c2da6a.png#clientId=udebfdf32-6ca6-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=u9f1e44df&margin=%5Bobject%20Object%5D&name=avatar.png&originHeight=640&originWidth=640&originalType=binary&ratio=1&rotation=0&showTitle=false&size=34002&status=done&style=none&taskId=u2cc0debc-cb3f-46b2-a20e-3faab5dc9a1&title=)\n\n![uTools_1648054722512.png](https://cdn.nlark.com/yuque/0/2022/png/243852/1649596451630-f3824cbb-946a-412a-8984-646531584981.png#clientId=udebfdf32-6ca6-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=u2ded442e&margin=%5Bobject%20Object%5D&name=uTools_1648054722512.png&originHeight=857&originWidth=1693&originalType=binary&ratio=1&rotation=0&showTitle=false&size=73815&status=done&style=none&taskId=u2a545784-171f-4889-ba02-175b6e348aa&title=)\n","zjan-bwcmnq") 

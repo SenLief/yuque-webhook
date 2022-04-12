@@ -48,3 +48,6 @@
 7. 本编文档即为语雀编写，你可以看下对比的效果
     - [语雀](https://www.yuque.com/zjan/blog/tmpkh6)
     - [博客](https://senlief.xyz/posts/%E5%88%A9%E7%94%A8%E8%AF%AD%E9%9B%80webhook%E4%BD%9C%E4%B8%BA%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E7%9A%84%E5%90%8E%E7%AB%AF/)
+
+## 安装
+[](https://senlief.xyz/posts/%E5%88%A9%E7%94%A8%E8%AF%AD%E9%9B%80webhook%E4%BD%9C%E4%B8%BA%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E7%9A%84%E5%90%8E%E7%AB%AF/)

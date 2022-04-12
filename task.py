@@ -70,7 +70,7 @@ def init_theme(gen, prefix, workdir, desdir):
         else:
             logger.info("为{}下载主题失败{}", prefix, ret_clone)
         config_list = Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text().split('\n')
-        config_list[0] = f'baseURL = "https://{prefix}.529213.xyz"'
+        config_list[0] = f'baseURL = "https://{prefix}.{user_config.get('DOMAIN', '')}"'
         logger.info("初始化网站地址为https://{}.529213.xyz", prefix)
         Path(workdir, 'config.toml').write_text('\n'.join(config_list), encoding='utf-8')
         os.chdir(Path(workdir))

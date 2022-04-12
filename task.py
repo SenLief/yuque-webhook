@@ -191,11 +191,11 @@ def publish_doc(slug, doc, title, prefix):
         md_doc, file_path = lake_to_md(doc, title)
         if file_path == '':
             path = str(Path(config.desdir))
-            Path(config.desdir, title + '.md').write_text(md_doc)
+            Path(config.desdir, title + '.md').write_text(md_doc, encoding='utf-8')
         else:
             path = str(Path(config.workdir, 'content', file_path))
             Path(config.workdir, 'content', file_path).mkdir(parents=True, exist_ok=True)
-            Path(config.workdir, 'content', file_path, title + '.md').write_text(md_doc)
+            Path(config.workdir, 'content', file_path, title + '.md').write_text(md_doc, encoding='utf-8')
         logger.debug(path)
         logger.info("写入了一篇新的文章：{}", title)
     except IOError as e:

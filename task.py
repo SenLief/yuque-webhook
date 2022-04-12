@@ -70,7 +70,8 @@ def init_theme(gen, prefix, workdir, desdir):
         else:
             logger.info("为{}下载主题失败{}", prefix, ret_clone)
         config_list = Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text().split('\n')
-        config_list[0] = f'baseURL = "https://{prefix}.{user_config.get('DOMAIN', '')}"'
+        domain = user_config.get('DOMAIN', '')
+        config_list[0] = f'baseURL = "https://{prefix}.{domain}"'
         logger.info("初始化网站地址为https://{}.529213.xyz", prefix)
         Path(workdir, 'config.toml').write_text('\n'.join(config_list), encoding='utf-8')
         os.chdir(Path(workdir))
@@ -190,6 +191,7 @@ def publish_doc(slug, doc, title, prefix):
     try:
         md_doc, file_path = lake_to_md(doc, title)
         if file_path == '':
+            logger.info("PATH为{}", file_path)
             path = str(Path(config.desdir))
             Path(config.desdir, title + '.md').write_text(md_doc, encoding='utf-8')
         else:

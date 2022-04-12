@@ -42,6 +42,9 @@ class Config:
         else:
             logger.debug("命令为空")
 
+def run(cmd_list=["hugo"]):
+    ret = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+    return ret
 
 def init_theme(gen, prefix, workdir, desdir):
     if gen == 'hugo':
@@ -50,17 +53,33 @@ def init_theme(gen, prefix, workdir, desdir):
         else:
             workdir.mkdir(parents=True, exist_ok=True)
             os.chdir(Path(workdir))
-        subprocess.call("hugo new site .",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8")
+        # subprocess.call("hugo new site .",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8")
+        ret_new = run(["hugo", "new", "site", '.'])
+        if ret_new.returncode == 0:
+            logger.info("为{}初始化网站成功", prefix)
+        else:
+            logger.info("为{}初始化网站失败{}", prefix, ret_new)
         Path(desdir).mkdir(parents=True, exist_ok=True)
-        logger.info("初始化一个HUGO博客")
+        logger.info("下载主题")
         theme_url = 'https://github.com/AmazingRise/hugo-theme-diary.git'
         command = ["git", "clone", theme_url, Path(workdir, 'themes', 'diary')]
-        subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        # subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        ret_clone = run(command)
+        if ret_clone.returncode == 0:
+            logger.info("为{}下载了diary主题", prefix)
+        else:
+            logger.info("为{}下载主题失败{}", prefix, ret_clone)
         config_list = Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text().split('\n')
         config_list[0] = f'baseURL = "https://{prefix}.529213.xyz"'
-        Path(workdir, 'config.toml').write_text('\n'.join(config_list))
+        logger.info("初始化网站地址为https://{}.529213.xyz", prefix)
+        Path(workdir, 'config.toml').write_text('\n'.join(config_list), encoding='utf-8')
         os.chdir(Path(workdir))
-        subprocess.call(["hugo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        ret_deploy = run(["hugo"])
+        if ret_deploy.returncode == 0:
+            logger.info("为{}部署成功", prefix)
+        else:
+            logger.info("为{}部署失败{}", prefix, ret_deploy)
+        # subprocess.call(["hugo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
     else:
         logger.info("没有初始化命令")
         pass
@@ -98,7 +117,6 @@ def create_namespace(prefix, code):
 
     # 下载主题和部署
     init_theme(gen, prefix, workdir, desdir)
-    logger.info("网站部署完成")
 
 def init_web(doc, prefix):
     doc_list = doc.split('---')
@@ -119,14 +137,19 @@ def init_web(doc, prefix):
         Path(config.workdir, 'themes').mkdir(parents=True, exist_ok=True)
         logger.info("下载主题{}", var_dict['theme'])
         command = ["git", "clone", var_dict['theme_url'], Path(config.workdir, 'themes', var_dict['theme'])]
-        subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+        # 
+        ret_clone = run(command)
+        if ret_clone.returncode == 0:
+            logger.info("为{}下载{}主题成功", prefix, var_dict['theme'])
+        else:
+            logger.info("为{}下载主题失败{}", prefix, ret_clone)
 
     # 处理配置文件
     conf_list = list(filter(None, doc_list[1].split('\n')))
     if conf_list[0] == '```yaml':
-        Path(config.workdir, 'config.yaml').write_text('\n'.join(conf_list[1:-1]))
+        Path(config.workdir, 'config.yaml').write_text('\n'.join(conf_list[1:-1]), encoding='utf-8')
     else:
-        Path(config.workdir, 'config.toml').write_text('\n'.join(conf_list[1:-1]))
+        Path(config.workdir, 'config.toml').write_text('\n'.join(conf_list[1:-1]), encoding='utf-8')
     
     # 处理静态文件
     logger.info("静态文件夹为{}", var_dict['staticdir'])

@@ -19,5 +19,49 @@
                   "html": true,
                   "shortcode": true
             }
+      },
+      "zjan": {
+            "code": "123123",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan/content/posts",
+            "workdir": "/home/janz/test/zjan",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": true
+            }
+      },
+      "zjan-aaa": {
+            "code": "123123",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-aaa/content/posts",
+            "workdir": "/home/janz/test/zjan-aaa",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": true
+            }
+      },
+      "zjan-bbb": {
+            "code": "123123",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-bbb/content/posts",
+            "workdir": "/home/janz/test/zjan-bbb",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": true
+            }
+      },
+      "zjan-ddd": {
+            "code": "123123",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-ddd/content/posts",
+            "workdir": "/home/janz/test/zjan-ddd",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": true
+            }
       }
 }

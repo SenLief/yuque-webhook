@@ -23,7 +23,7 @@ def get_pic(line):
         media_url = re.search(p_m, line)[0]
         logger.debug("画板的地址：{media_url}")
     else:
-        p_url = re.compile(r'https://cdn.nlark.com/yuque/\d/\d{4}/(png|jpeg)/\d{6}/\w+-\w+-\w+-\w+-\w+-\w+.(png|jpeg)', re.I)
+        p_url = re.compile(r'https://cdn.nlark.com/yuque/\d/\d{4}/(png|jpeg|gif)/\d{6}/\w+-\w+-\w+-\w+-\w+-\w+.(png|jpeg|gif)', re.I)
         media_url = re.search(p_url, line)[0]
         logger.debug("图片的地址：{media_url}")
     # return f'<img src="{media_url}" alt="{media_cap}" referrerPolicy="no-referrer" />  '
@@ -96,5 +96,5 @@ def lake_to_md(doc, title):
 
 
 if __name__ == '__main__':
-    doc = "```yaml\ntags: [yuque, 防盗链]\n```\n> 语雀的图片现在已经开始防盗链了，这样就不好利用api同步到其他地方去，目前只能通过修改主题解决这个问题\n\n<a name=\"SbWqz\"></a>\n## Hugo修改主题\n`themes/<theme>/layouts/_default/baseof.html`  <br />修改这个文件添加几行代码  \n```html\n<head>\n    <meta name=\"referrer\" content=\"never\">\n</head>\n```\n<a name=\"ayC8Q\"></a>\n## 为每个图片链接添加属性\n> HTML的img标签可以通过添加属性来返回referer\n\n```html\n<img src=\"xxxxx\" referrerPolicy=\"no-referrer\"/>\n```\n \n<a name=\"YcyXB\"></a>\n## 最后还是需要把图片拉到本地才行。  \n![uTools_1648054722512.png](https://cdn.nlark.com/yuque/0/2022/png/243852/1648054731230-a4141c6f-be21-4906-bdca-f2443fceb0b6.png#clientId=u05a807ef-2cfd-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=ud2170015&margin=%5Bobject%20Object%5D&name=uTools_1648054722512.png&originHeight=857&originWidth=1693&originalType=binary&ratio=1&rotation=0&showTitle=false&size=73815&status=done&style=none&taskId=u6580d2c6-af27-4c2e-8012-e795162e884&title=)\n\n[语雀的图片防盗链问题](https://senlief.xyz/posts/语雀的图片防盗链问题.html)\n"
+    doc = "```yaml\nauthors: Janz\ndescription: \"退格到头会闪屏\"\ntags: [Terminal, git]\nfeatured_image: \"\"\ncategories: [备忘]\ncomment: true\n```\n> 退格到头会闪屏，很影响很用的体验。\n\n<a name=\"XQshe\"></a>\n## 现象\n![2022-04-19-11-43-53.gif](https://cdn.nlark.com/yuque/0/2022/gif/243852/1650340327735-75c67282-20b0-4a2c-a65f-775cdb45e7ac.gif#clientId=u36625fcf-7cfd-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=ud9dbf4c9&margin=%5Bobject%20Object%5D&name=2022-04-19-11-43-53.gif&originHeight=724&originWidth=1420&originalType=binary&ratio=1&rotation=0&showTitle=false&size=4008225&status=done&style=none&taskId=u09b0458a-9718-46ac-9308-4b12b820982&title=)\n<a name=\"Vz1bi\"></a>\n## 解决\n`$ echo \"set bell-style none\" >> ~/.inputrc`\n<a name=\"ZfaKa\"></a>\n## 参考\n\n- [Github Issue](https://github.com/microsoft/terminal/issues/7200#issuecomment-672786518)\n"
     print(lake_to_md(doc, 'test'))

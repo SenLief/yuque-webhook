@@ -6,8 +6,6 @@ import re
 
 from loguru import logger
 
-
-# date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
 # logger.add('test.log', format="{time} {level} {message}", level="INFO")
 
 def get_pic(line):
@@ -47,6 +45,21 @@ def get_attachment(line):
         attachment = line
     return attachment
 
+def get_third(line):
+    pattern = re.compile(r'\(https\S+\)')
+    third_url = re.search(pattern, line)[0].lstrip('(').rstrip(')')
+
+    padding = '75%'
+    if 'player.bilibili.com' in line:
+        url = third_url + '&high_quality=1'
+    elif 'music.163.com' in line:
+        padding = '12%'
+        url = third_url
+    else:
+        url = third_url
+    html = f'<div style="position:relative; width:100%; padding-bottom:{padding};" ><iframe class="responsive-iframe" src="{url}"  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" style="position:absolute; height:100%; width:100%;" ></iframe></div>'
+    
+    return html
 
 def lake_to_md(doc, title):
     date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
@@ -59,7 +72,7 @@ def lake_to_md(doc, title):
     except IndexError as e:
         logger.info("文档为空，不渲染！")
         logger.error(e)
-    logger.debug("文档的内容：{md_list}")    
+    logger.debug("文档的内容：{}", md_list)    
 
     doc_list = []
     file_path = ''
@@ -73,6 +86,10 @@ def lake_to_md(doc, title):
         elif 'www.yuque.com/attachments' in line:
             attachment_url = get_attachment(line)
             doc_list.append(attachment_url)
+        elif '点击查看' in line or 'doc_embed' in line:
+            html = get_third(line)
+            # new_line = f'{{{{< iframe url={third_url} >}}}}'
+            doc_list.append(html) 
         else:
             doc_list.append(line)
     
@@ -96,5 +113,5 @@ def lake_to_md(doc, title):
 
 
 if __name__ == '__main__':
-    doc = "```yaml\nauthors: Janz\ndescription: \"退格到头会闪屏\"\ntags: [Terminal, git]\nfeatured_image: \"\"\ncategories: [备忘]\ncomment: true\n```\n> 退格到头会闪屏，很影响很用的体验。\n\n<a name=\"XQshe\"></a>\n## 现象\n![2022-04-19-11-43-53.gif](https://cdn.nlark.com/yuque/0/2022/gif/243852/1650340327735-75c67282-20b0-4a2c-a65f-775cdb45e7ac.gif#clientId=u36625fcf-7cfd-4&crop=0&crop=0&crop=1&crop=1&from=ui&id=ud9dbf4c9&margin=%5Bobject%20Object%5D&name=2022-04-19-11-43-53.gif&originHeight=724&originWidth=1420&originalType=binary&ratio=1&rotation=0&showTitle=false&size=4008225&status=done&style=none&taskId=u09b0458a-9718-46ac-9308-4b12b820982&title=)\n<a name=\"Vz1bi\"></a>\n## 解决\n`$ echo \"set bell-style none\" >> ~/.inputrc`\n<a name=\"ZfaKa\"></a>\n## 参考\n\n- [Github Issue](https://github.com/microsoft/terminal/issues/7200#issuecomment-672786518)\n"
+    doc = "```yaml\ntags: [test, yuque]\n```\n下面是b站<br />[点击查看【bilibili】](https://player.bilibili.com/player.html?bvid=BV1tq4y1e7RW)<br />下面是musicdfsggsdfg fdsgd  dsfasfdsdfsadfsdfsdafsd  <br />[点击查看【music163】](https://music.163.com/outchain/player?type=2&id=1420830402&auto=0&height=66)<br />下面是附件sdfsdfsdfsdfasdfsdfsdf   fsdfsadfsaf<br />[favicon_package_v0.16.zip](https://www.yuque.com/attachments/yuque/0/2022/zip/243852/1648913657004-5f256593-4400-4b63-a139-fdf0e5f3e6af.zip?_lake_card=%7B%22src%22%3A%22https%3A%2F%2Fwww.yuque.com%2Fattachments%2Fyuque%2F0%2F2022%2Fzip%2F243852%2F1648913657004-5f256593-4400-4b63-a139-fdf0e5f3e6af.zip%22%2C%22name%22%3A%22favicon_package_v0.16.zip%22%2C%22size%22%3A247603%2C%22type%22%3A%22application%2Fx-zip-compressed%22%2C%22ext%22%3A%22zip%22%2C%22status%22%3A%22done%22%2C%22taskId%22%3A%22ueddaf3ee-1665-4f3b-bafb-d74835d8b14%22%2C%22taskType%22%3A%22upload%22%2C%22id%22%3A%22u4f63386d%22%2C%22card%22%3A%22file%22%7D)<br />下面是导图<br />![](https://cdn.nlark.com/yuque/0/2022/jpeg/243852/1648914842615-69be76e4-6e4a-4bd4-965a-6f0ae1b77930.jpeg)<br />下面是文本绘图asdfsadfsd   sdfasdsd  sdfasdfs    dsfsdfssdfasdfsdfsadfsdf  sfdsadfsadfs\n![](https://cdn.nlark.com/yuque/__puml/9f5560730e769f3fe0fe8387247e9beb.svg#lake_card_v2=eyJ0eXBlIjoicHVtbCIsImNvZGUiOiJAc3RhcnR1bWxcblA6IFBFTkRJTkdcblA6IFBlbmRpbmcgZm9yIHJlc3VsdFxuXG5OOiBOT19SRVNVTFRfWUVUXG5OOiBEaWQgbm90IHNlbmQgdGhlIEtZQyBjaGVjayB5ZXQgXG5cblk6IEFQUFJPVkVEXG5ZOiBLWUMgY2hlY2sgc3VjY2Vzc2Z1bFxuXG5SOiBSRUpFQ1RFRFxuUjogS1lDIGNoZWNrIGZvdW5kIHRoZSBhcHBsaWNhbnQncyBcblI6IGluZm9ybWF0aW9uIG5vdCBjb3JyZWN0IFxuXG5YOiBFWFBJUkVEXG5YOiBQcm9vZiBvZiBBZGRyZXNzIChQT0EpIHRvbyBvbGRcblxuWypdIC0tPiBOIDogQ2FyZCBhcHBsaWNhdGlvbiByZWNlaXZlZFxuTiAtLT4gUCA6IFN1Ym1pdHRlZCB0aGUgS1lDIGNoZWNrXG5QIC0tPiBZXG5QIC0tPiBSXG5QIC0tPiBYIDogUHJvb2Ygb2YgQWRkcmVzcyAoUE9BKSB0b28gb2xkXG5QIC0tPiBYIDogZXhwbGljaXRseSBieSBLWUNcblkgLS0-IFsqXVxuUiAtLT4gWypdXG5YIC0tPiBbKl1cbkBlbmR1bWwiLCJ1cmwiOiJodHRwczovL2Nkbi5ubGFyay5jb20veXVxdWUvX19wdW1sLzlmNTU2MDczMGU3NjlmM2ZlMGZlODM4NzI0N2U5YmViLnN2ZyIsImlkIjoiaXdUVFQiLCJtYXJnaW4iOnsidG9wIjp0cnVlLCJib3R0b20iOnRydWV9LCJjYXJkIjoiZGlhZ3JhbSJ9)nwr123<br />[点击查看【canva】](https://www.canva.cn/design/DAD3c63mhHU/view?embed)<br />[点击查看【processon】](https://www.processon.com/embed/5d006c43e4b071ad5a206ed2)<br />[重构内容解析](https://www.yuque.com/zjan/bwcmnq/buhn9d?view=doc_embed)\n"
     print(lake_to_md(doc, 'test'))

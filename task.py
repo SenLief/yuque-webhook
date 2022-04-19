@@ -72,7 +72,7 @@ def init_theme(gen, prefix, workdir, desdir):
         config_list = Path(workdir, 'themes', 'diary', 'exampleSite', 'config.toml').read_text().split('\n')
         domain = user_config.get('DOMAIN', '')
         config_list[0] = f'baseURL = "https://{prefix}.{domain}"'
-        logger.info("初始化网站地址为https://{}.529213.xyz", prefix)
+        logger.info("初始化网站地址为https://{}.{}.xyz", prefix, domain)
         Path(workdir, 'config.toml').write_text('\n'.join(config_list), encoding='utf-8')
         os.chdir(Path(workdir))
         ret_deploy = run(["hugo"])

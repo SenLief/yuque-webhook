@@ -7,7 +7,7 @@ import re
 from loguru import logger
 
 
-date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
+# date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
 # logger.add('test.log', format="{time} {level} {message}", level="INFO")
 
 def get_pic(line):
@@ -49,6 +49,7 @@ def get_attachment(line):
 
 
 def lake_to_md(doc, title):
+    date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
     try:
         if '<br />' in doc:
             d_list = doc.replace('<br />', '  \n')

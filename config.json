@@ -63,5 +63,16 @@
                   "html": true,
                   "shortcode": true
             }
+      },
+      "zjan-zzz": {
+            "code": "123456",
+            "basedir": "/home/janz/test",
+            "desdir": "/home/janz/test/zjan-zzz/content/posts",
+            "workdir": "/home/janz/test/zjan-zzz",
+            "cmd": "hugo",
+            "conf": {
+                  "html": true,
+                  "shortcode": true
+            }
       }
 }

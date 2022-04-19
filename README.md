@@ -51,3 +51,7 @@
 
 ## 安装
 [](https://senlief.xyz/posts/%E5%88%A9%E7%94%A8%E8%AF%AD%E9%9B%80webhook%E4%BD%9C%E4%B8%BA%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E7%9A%84%E5%90%8E%E7%AB%AF/)
+
+## 语雀编辑器支持情况
+[语雀示例](https://www.yuque.com/zjan/blog/wm2xs8)
+[渲染后的文章](https://senlief.xyz/posts/%E8%AF%AD%E9%9B%80%E6%96%87%E6%A1%A3%E6%B8%B2%E6%9F%93%E7%A4%BA%E4%BE%8B/)
